@@ -3,7 +3,7 @@ package handler
 import (
 	"log"
 	"net/http"
-	//"github.com/KisLupin/jwt-golang/main/product-api/data"
+	//"github.com/KisLupin/jwt-golang/main/api/data"
 )
 
 type Products struct {

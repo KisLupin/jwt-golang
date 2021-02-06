@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/KisLupin/jwt-golang/main/api/data"
+	"github.com/KisLupin/jwt-golang/main/model/data"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"

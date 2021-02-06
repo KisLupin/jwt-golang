@@ -5,12 +5,22 @@ import (
 	"log"
 	"net/http"
 	"os"
+	_ "os"
+	"time"
 )
 
 func main() {
 	l := log.New(os.Stdout, "product-api", log.LstdFlags)
 	hh := handler.NewHello(l)
+
 	sm := http.NewServeMux()
 	sm.Handle("/", hh)
-	_ = http.ListenAndServe("9090", sm)
+	s := &http.Server{
+		Addr: ":9090",
+		Handler: sm,
+		IdleTimeout: 120 * time.Second,
+		ReadTimeout: 1 * time.Second,
+		WriteTimeout: 1 * time.Second,
+	}
+	l.Fatal(s.ListenAndServe())
 }

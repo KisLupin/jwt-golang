@@ -15,5 +15,5 @@ func NewProducts(l *log.Logger) * Products{
 }
 
 func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	//lp := data.
+	//lp := data.GetProducts()
 }

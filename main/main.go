@@ -10,8 +10,8 @@ import (
 
 func main() {
 	l := log.New(os.Stdout, "product-api", log.LstdFlags)
+	l.Println("Server on port 9090")
 	hh := handler.NewProducts(l)
-
 	sm := http.NewServeMux()
 	sm.Handle("/", hh)
 	s := &http.Server{

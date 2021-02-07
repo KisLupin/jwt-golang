@@ -1,13 +1,23 @@
 package main
 
 import (
+	"fmt"
 	"github.com/KisLupin/jwt-golang/main/handler"
 	"github.com/KisLupin/jwt-golang/main/model/files"
+	"github.com/KisLupin/jwt-golang/main/protos"
+	"github.com/KisLupin/jwt-golang/main/server"
+	_ "github.com/denisenkom/go-mssqldb"
+	"github.com/google/uuid"
 	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/hashicorp/go-hclog"
 	"github.com/nicholasjackson/env"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"gorm.io/driver/sqlserver"
+	"gorm.io/gorm"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -17,6 +27,60 @@ var logLevel = env.String("LOG_LEVEL", false, "debug", "Log output level for the
 var basePath = env.String("BASE_PATH", false, "./imagestore", "Base path to save images")
 
 func main() {
+	//api()
+	//gRPC()
+	mssqlConnection()
+}
+
+var serverIP = "14.225.74.30"
+var port = 1433
+var user = "mobihome_dev"
+var password = "mobihome_dev"
+var database = "mobihome_dev"
+
+type Order struct {
+	OrderGuid uuid.UUID
+	OrderNo  int
+}
+
+func mssqlConnection() {
+	connString := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d;database=%s;",
+		serverIP, user, password, port, database)
+	// Create connection pool
+
+	db, err := gorm.Open(sqlserver.Open(connString), &gorm.Config{})
+	if err != nil {
+		log.Fatal("Error creating connection pool: ", err.Error())
+	}
+
+	var data []Order
+	db.Raw("select * from [Order] o", &data).Scan(&data)
+	fmt.Println("data ", data)
+	fmt.Printf("Connected!\n")
+}
+
+func gRPC() {
+	l := hclog.Default()
+
+	// create a new gRPC server, use WithInsecure to allow http connections
+	gs := grpc.NewServer()
+	// create an instance of the Currency server
+	c := server.NewCurrency(l)
+	// register the currency server
+	protos.RegisterCurrencyServer(gs, c)
+	// register the reflection service which allows clients to determine the methods
+	reflection.Register(gs)
+	// create a TCP socket for inbound server connections
+	listen, err := net.Listen("tcp", fmt.Sprintf(":%d", 9092))
+	if err != nil {
+		l.Error("Unable to create listener", "error", err)
+		os.Exit(1)
+	}
+	// listen for requests
+	_ = gs.Serve(listen)
+}
+
+func api() {
 	logger := hclog.New(
 		&hclog.LoggerOptions{
 			Name:  "product-images",
